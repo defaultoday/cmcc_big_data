@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 #from selenium.webdriver.support import expected_conditions
 from base import Base
 from userdata import UserData
+from datetime import datetime
 
 class SendData(Base):
     """
@@ -41,9 +42,10 @@ class SendData(Base):
                     self.browser.switch_to_frame(iframe)
                     logo = self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div')
                     ActionChains(self.browser).move_to_element(logo).click()
-                    #有些工单找不到，需要设置日期为2019-05-01
+                    #有些工单找不到，需要设置日期为往前一年
+                    now = datetime.now()
                     self.browser.execute_script("var setDate=document.getElementById(\"date_picker__task_previous\");setDate.removeAttribute('readonly');")
-                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[3]/div/div[1]/ul/div/div[2]/li/div/div[1]/input').send_keys('2020-05-01')
+                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[3]/div/div[1]/ul/div/div[2]/li/div/div[1]/input').send_keys("%d-%02d-%02d"%(now.year-1,now.month,1))
                     #输入工单号
                     input_text = self.browser.find_element_by_id('public_inputCompinent__inputMainorderCode')
                     while True:

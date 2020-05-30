@@ -89,5 +89,5 @@ class ReceiveData(Base):
 
 
 if(__name__ == "__main__"):
-    start = ReceiveData(driver_path='./driver/receive')
+    start = ReceiveData()
     start.run()
