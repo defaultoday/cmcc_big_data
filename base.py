@@ -2,6 +2,7 @@
 
 from abc import abstractmethod,ABC
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
 import time
 
 class Base(ABC):
@@ -24,14 +25,11 @@ class Base(ABC):
         self.out_file = None
         #保存当前读取到的工单号
         self.text = ""
-        #保存是否处理异常，重启浏览器后从下一个单号开始，将放弃出现错误的工单号接单
-        self.error = False
-        #用于退出循环
-        self.Finished = False
     """
     初始化工单文件
     """
     def init_data(self):
+        print("初始化文件：IN："+self.in_path+" OUT:"+self.out_path)
         if(self.in_file == None):
             try:
                 self.in_file = open(self.in_path)
@@ -40,7 +38,7 @@ class Base(ABC):
                 return False
         if(self.out_file == None):
             try:
-                self.out_file = open(self.out_path,"a+")
+                self.out_file = open(self.out_path,"w+")
             except:
                 print("加载输出文件错误")
                 return False
@@ -60,7 +58,7 @@ class Base(ABC):
             except:
                 print("初始化浏览器失败！请关闭已打开的浏览器！")
         if(self.browser != None):
-            self.browser.implicitly_wait(30)
+            self.browser.implicitly_wait(10)
         return self.browser
     """
     登录操作
@@ -93,7 +91,7 @@ class Base(ABC):
     异常后关闭文件和浏览器
     """
     def destroy(self):
-        print("关闭浏览器和文件")
+        print("关闭浏览器和文件: IN:"+self.in_path+" OUT:"+self.out_path)
         if(self.browser != None):
             try:
                 self.browser.quit()
@@ -115,6 +113,30 @@ class Base(ABC):
                 print("关闭输出文件错误")
         self.out_file = None
     
+    """
+    刷新环境，处理出错后刷新重新处理
+    """
+    def refresh(self):
+        self.browser.refresh()
+        time.sleep(3)
+        self.close_notice_window()
+        self.select_to_default()
+
+    """
+    刷新后需要选择到默认界面
+    """
+    def select_to_default(self):
+        try:
+            #选择在线协作
+            self.browser.find_element_by_xpath('//*[@id="node_ZXXZ"]/i').click()
+            time.sleep(5)
+            iframe = self.browser.find_element_by_xpath('//*[@id="main_frame_01"]/iframe')
+            self.browser.switch_to_frame(iframe)
+            logo = self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div')
+            ActionChains(self.browser).move_to_element(logo).click()
+        except:
+            print("选择默认界面失败")
+
     """
     处理任务函数,每个模块需要有单独的自己实现
     """
