@@ -30,18 +30,21 @@ class Base(ABC):
     """
     def init_data(self):
         print("初始化文件：IN："+self.in_path+" OUT:"+self.out_path)
-        if(self.in_file == None):
-            try:
-                self.in_file = open(self.in_path)
-            except:
-                print("加载工单文件出错！")
-                return False
-        if(self.out_file == None):
-            try:
-                self.out_file = open(self.out_path,"w+")
-            except:
-                print("加载输出文件错误")
-                return False
+        #需要处理没有输入和输出文件的情况
+        if(self.in_path != ""): 
+            if(self.in_file == None):
+                try:
+                    self.in_file = open(self.in_path)
+                except:
+                    print("加载工单文件出错！")
+                    return False
+        if(self.out_path != ''):
+            if(self.out_file == None):
+                try:
+                    self.out_file = open(self.out_path,"w+")
+                except:
+                    print("加载输出文件错误")
+                    return False
         return True
     """
     获取浏览器，同一上下文只允许一个浏览器
@@ -55,10 +58,10 @@ class Base(ABC):
                     self.browser = webdriver.Chrome()
                 else:
                     self.browser = webdriver.Chrome(self.driver_path)
-            except:
-                print("初始化浏览器失败！请关闭已打开的浏览器！")
+            except Exception as e:
+                print("初始化浏览器失败！请关闭已打开的浏览器！"+ str(e))
         if(self.browser != None):
-            self.browser.implicitly_wait(10)
+            self.browser.implicitly_wait(15)
         return self.browser
     """
     登录操作
@@ -120,6 +123,7 @@ class Base(ABC):
         self.browser.refresh()
         time.sleep(3)
         self.close_notice_window()
+        time.sleep(3)
         self.select_to_default()
 
     """

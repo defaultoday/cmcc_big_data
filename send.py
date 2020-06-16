@@ -37,7 +37,7 @@ class SendData(Base):
             #如果优化分类已经有选择，就用默认选择的内容，如果没有选择就从下拉列表里选择 #1-省公司优化派单
             #self.browser.execute_script("var setDate=document.getElementById(\"formComponent_isEdit__select优化分类\");setDate.removeAttribute('readonly');")
             dataTypeSelect.click()
-            time.sleep(1)
+            time.sleep(3)
             if(dataTypeSelect.text == ""):
                 """
                 dataTypeList = self.browser.find_elements_by_xpath('/html/body/div')
@@ -106,29 +106,32 @@ class SendData(Base):
         except:
             print(str("转派出错"))
     """
-    处理工单
+    处理工单,que是个队列，在多线程的时候，如果给一个队列，会把处理好的工单号也保存到队列里，给其他线程
+    直接从队列里读取工单号
     """
-    def run(self):
+    def run(self,que=None):
         input_text = None
         while True:
             if(self.login() and self.close_notice_window()):
                 self.select_to_default()
-                #有些工单找不到，需要设置日期为往前一年
-                try:
-                    now = datetime.now()
-                    self.browser.execute_script("var setDate=document.getElementById(\"date_picker__task_previous\");setDate.removeAttribute('readonly');")
-                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[3]/div/div[1]/ul/div/div[2]/li/div/div[1]/input').send_keys("%d-%02d-%02d"%(now.year-1,now.month,1))
-                    #输入工单号
-                    input_text = self.browser.find_element_by_id('public_inputCompinent__inputMainorderCode')
-                    break
-                except:
-                    print("加载页面到输入框出错")
+                break
             else:
                 self.destroy()
 
         while True:
             text = self.in_file.readline()
             try:
+                #有些工单找不到，需要设置日期为往前一年
+                time.sleep(5)
+                try:
+                    now = datetime.now()
+                    self.browser.execute_script("var setDate=document.getElementById(\"date_picker__task_previous\");setDate.removeAttribute('readonly');")
+                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[3]/div/div[1]/ul/div/div[2]/li/div/div[1]/input').send_keys("%d-%02d-%02d"%(now.year-1,now.month,1))
+                    #输入工单号
+                    input_text = self.browser.find_element_by_id('public_inputCompinent__inputMainorderCode')
+                except:
+                    print("加载页面到输入框出错")
+
                 text=text.rstrip("\n")
                 if(text == ""):
                     self.destroy()
@@ -145,7 +148,7 @@ class SendData(Base):
                 time.sleep(5)
                 #处理工单--选择工单处理菜单
                 self.browser.find_element_by_class_name("tableDropdown").click()
-                time.sleep(1)
+                time.sleep(3)
                 #接单之前选项有{查看，任务处理}，派单前选项有{1-查看，2-删除，3-任务处理},派单后{查看，任务处理}
                 menu = self.browser.find_elements_by_xpath('/html/body/ul/div/li')
                 if(menu.__len__()==3):
@@ -157,13 +160,15 @@ class SendData(Base):
                 #处理工单--转派
                 time.sleep(3)
                 self.trans(text_list[1])
+                if(que != None):
+                    que.put(text_list[0])
                 self.out_file.write(text_list[0]+'\n')
                 self.out_file.flush()
-                time.sleep(5)
                 print("完成工单： "+text_list[0])
             except:
                 print("处理工单出错,接着处理工单!")
                 self.refresh()
+        self.destroy()
 
 
 

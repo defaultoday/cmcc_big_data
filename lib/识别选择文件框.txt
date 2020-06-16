@@ -1,0 +1,2 @@
+upload.exe 绝对路径 C:\质检-附件.xlsx
+upload2.exe 相对路径 ..\data\质检-附件.xlsx 未经测试
