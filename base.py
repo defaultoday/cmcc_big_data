@@ -4,6 +4,9 @@ from abc import abstractmethod,ABC
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 import time
+import win32api
+import win32con
+import win32gui
 
 class Base(ABC):
     """
@@ -11,7 +14,7 @@ class Base(ABC):
     """
     url = "http://10.174.240.17:8081/portal/pure/Frame.action"
 
-    def __init__(self,driver_path="",in_path="",out_path="",username="",password=""):
+    def __init__(self,driver_path="",in_path="",out_path="",username="",password="",need_upload=False):
         self.username = username
         self.password = password
         #驱动路径，默认值为：chromedriver
@@ -25,6 +28,7 @@ class Base(ABC):
         self.out_file = None
         #保存当前读取到的工单号
         self.text = ""
+        self.need_upload = need_upload
     """
     初始化工单文件
     """
@@ -35,8 +39,8 @@ class Base(ABC):
             if(self.in_file == None):
                 try:
                     self.in_file = open(self.in_path)
-                except:
-                    print("加载工单文件出错！")
+                except Exception as e:
+                    print("加载工单文件出错！"+str(e))
                     return False
         if(self.out_path != ''):
             if(self.out_file == None):
@@ -62,6 +66,22 @@ class Base(ABC):
                 print("初始化浏览器失败！请关闭已打开的浏览器！"+ str(e))
         if(self.browser != None):
             self.browser.implicitly_wait(15)
+        
+        """
+        下面内容只针对上传附件使用，上传附件的模块，需要识别浏览器句柄，再遍历打开对话框的父句柄是不是对应
+        的浏览器，再决定是否上传。
+        """
+        if(self.need_upload):
+            print("正在获取浏览器句柄，请稍后！")
+            time.sleep(5)
+            while True:
+                self.handle = win32gui.GetForegroundWindow()
+                if(self.handle == 0):
+                    print('请点击浏览器到最前面~~~~~~')
+                    continue
+                else:
+                    break
+            print("获取窗口句柄完成，句柄："+"%#x"%self.handle)
         return self.browser
     """
     登录操作

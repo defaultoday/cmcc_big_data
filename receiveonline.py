@@ -16,7 +16,7 @@ class ReceiveOnline(Base):
     接工单类,负责在想一直刷新中端优化市场第三方页面，如果接单时间为空就点击查看，在线监控接单，由快线程一直接工单页面第一页的工单
     慢线程每隔半小时启动检查2-4页工单
     """
-    def __init__(self,driver_path="./driver/receive"):
+    def __init__(self,driver_path="./driver/chromedriver"):
         user_data = UserData()
         username,password = user_data.get_user_data(0)
         super().__init__(driver_path=driver_path,in_path="",out_path="",username=username,password=password)
@@ -28,14 +28,23 @@ class ReceiveOnline(Base):
         check = self.browser.find_elements_by_xpath('//*[@id="complex_table__task_out-table"]/div[3]/table/tbody/tr')
         if(check.__len__() > 0):
             for i in range(0,check.__len__()):
+                ActionChains(self.browser).move_to_element(check[i]).perform()
                 item = check[i].find_elements_by_tag_name('td')
                 #如果item接单时间为空，就点击工单上的菜单按钮，弹出菜单
                 if(item[4].text == ""):
-                    item[1].click()
+                    ActionChains(self.browser).move_to_element(item[1]).perform()
+                    #item[1].click()
+                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[4]/div/div[1]/div/div[3]/table/tbody/tr['+str(i+1)+']/td[2]/div/div/div/div/span').click()
                     #接单之前选项有{1-查看，2-任务处理},这里选择 查看 就完成接单
                     time.sleep(1)
                     self.browser.find_element_by_xpath("/html/body/ul/div[1]/li/i").click()
-                    time.sleep(7)
+                    """
+                    if(i==0):
+                        self.browser.find_element_by_xpath("/html/body/ul/div[1]/li/i").click()
+                    else:
+                        self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[4]/div/div[1]/div/div[3]/table/tbody/tr['+ str(i+1) +']/td[2]/div/div/div/div/ul/div[1]/li/i').click()
+                    """
+                    time.sleep(5)
                     tabList = self.browser.find_element_by_class_name('el-tabs__nav-scroll')
                     tabListDiv = tabList.find_elements_by_tag_name('div')[1]
                     if(tabListDiv != None):
@@ -56,9 +65,9 @@ class ReceiveOnline(Base):
                 self.browser.find_element_by_id("task_management_mat").click()
                 time.sleep(10)
                 self.recv_check()
-            except:
+            except Exception as e:
                 self.refresh()
-                print("处理工单出错,接着处理工单!")
+                print("处理工单出错,接着处理工单!"+str(e))
     
     """
         慢速接单，在线程中用来半小时启动一次，检查2-4页工单是否有遗漏没有接单

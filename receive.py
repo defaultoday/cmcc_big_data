@@ -10,17 +10,20 @@ from selenium.webdriver.common.by import By
 #from selenium.webdriver.support import expected_conditions
 from base import Base
 from userdata import UserData
+import threading
+from datafile import DataFile
 
 class ReceiveData(Base):
     """
     接工单类,负责从send_sucs.txt文件里读取工单号，登录后查询到工单点击查看>关闭工单，循环下个工单号，
     如果有工单在查询中出错，将放弃该工单号，重启浏览器查询下一个工单号，接单成功的单号保存到receive_sucs.txt文件
     """
-    def __init__(self,driver_path="./driver/receive",in_path="./data/send_sucs.txt",out_path="./data/receive_sucs.txt"):
+    def __init__(self,driver_path="./driver/chromedriver.exe",in_path="./data/send_sucs.txt",out_path="./data/receive_sucs.txt"):
         user_data = UserData()
         username,password = user_data.get_user_data(0)
-        super().__init__(driver_path,in_path,out_path,username,password)
-   
+        super().__init__(driver_path,in_path,out_path,username,password,need_upload=False)
+
+    
     """
     处理工单,que是个队列，从其他线程处理结果中读取工单号
     """
@@ -80,7 +83,22 @@ class ReceiveData(Base):
                 print("处理工单出错,接着处理工单!")
 
 
+def recv_stack(in_path="",out_path=""):
+    start = ReceiveData(in_path=in_path,out_path=out_path)
+    start.run()
 
 if(__name__ == "__main__"):
-    start = ReceiveData()
-    start.run()
+    data_path = './data/data.txt'
+    path_pre = data_path[0:-4]
+    thread_count = 4
+    data = DataFile(data_path,thread_count)
+    data.run()
+    for i in range(0,4):
+        send_thread = threading.Thread(target=recv_stack,args=('./data/data'+str(i)+".txt","./data/Recv_Thread"+str(i)+".txt"))
+        send_thread.setDaemon(True)
+        send_thread.start()
+        time.sleep(3)
+    #start = ReceiveData(in_path='./data/Send_Thread0.txt',out_path='./data/Recv_Thread0.txt')
+    #start.run()
+    while True:
+        pass
