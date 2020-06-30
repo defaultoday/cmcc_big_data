@@ -63,7 +63,7 @@ class FDDSubmit(Base):
                 time.sleep(5)
                 #检查是待办还是驳回
                 opt = self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[2]/ul/div[1]/li/div/div/i')
-                if(opt.text != '0'):
+                if(opt.text == '1'):
                     self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[2]/ul/div[1]/li/div/p').click()
                 else:
                     self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[2]/ul/div[3]/li/div/p').click()
@@ -126,7 +126,7 @@ class FDDSubmit(Base):
 
                     #质检按钮
                     self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[6]/button[3]/span').click()
-                    self.out_file.write(text+'\n')
+                    self.out_file.write(data_arr[0]+'\n')
                     self.out_file.flush()
                     time.sleep(3)
                         
@@ -140,7 +140,7 @@ def fddsubmit_stack(in_path="",out_path=""):
     start.run()
 
 if(__name__ == "__main__"):
-    
+
     data_path = './data/data.txt'
     path_pre = data_path[0:-4]
     thread_count = 4
