@@ -11,14 +11,14 @@ from selenium.webdriver.common.by import By
 from base import Base
 from userdata import UserData
 from datetime import datetime
+from datafile import DataFile
+import threading
 
 class SendData(Base):
     """
     派工单类,负责从data.txt文件里读取工单号，登录后查询到工单点击任务处理，设置优化分类，提交
-    再点击当前工单，点击任务处理，选择预处理意见，设置处理时限，转派
-    循环下个工单号，如果有工单在查询中出错，将放弃该工单号，重启浏览器查询下一个工单号，接单成功的单号保存到send_sucs.txt文件
     data.txt格式：
-    工单单号    处理时限   #文本内容不包含表头
+    工单单号
     """
     def __init__(self,driver_path="./driver/chromedriver.exe",in_path="./data/data.txt",out_path="./data/send_sucs.txt"):
         user_data = UserData()
@@ -30,87 +30,21 @@ class SendData(Base):
     """
     def submit(self):
         try:
-            self.browser.find_element_by_xpath("/html/body/ul/div[3]/li/i").click()
+            self.browser.find_element_by_xpath('//*[@class="el-dropdown-menu__item" and text()="任务处理"]').click()
             time.sleep(5)
             #读取工单优化分类，从文件里读取
-            dataTypeSelect = self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[1]/div[2]/div/div/form/div[29]/div/div/div[1]/input')
+            self.browser.find_element_by_xpath('//input[@id="form_component_sub_opt_type"]').click()
             #如果优化分类已经有选择，就用默认选择的内容，如果没有选择就从下拉列表里选择 #1-省公司优化派单
             #self.browser.execute_script("var setDate=document.getElementById(\"formComponent_isEdit__select优化分类\");setDate.removeAttribute('readonly');")
-            dataTypeSelect.click()
             time.sleep(3)
-            """
-            dataTypeList = self.browser.find_elements_by_xpath('/html/body/div')
-            dataTypeListdiv = dataTypeList[2].find_element_by_tag_name("div")
-            dataTypeListdiv1 = dataTypeListdiv[0].find_element_by_tag_name("div")
-            dataTypeListUl = dataTypeListdiv1[0].find_element_by_tag_name("ul")
-            dataTypeListLi = dataTypeListUl[0].dfind_elements_by_tag_name("li")
-            dataTypeListLi[1].click()
-            """
-            select = self.browser.find_elements_by_xpath('//span[contains(text(),"省公司优化派单")]')
-            select[0].click()
-            if(dataTypeSelect.text == ""):
-                #dataTypeListLi = dataTypeListUl.dfind_elements_by_tag_name("li")[1]
-                #dataTypeListLi.click()
-
-                #dataTypeList = self.browser.find_elements_by_xpath("/html/body/div[4]/div[1]/div[1]/ul/li")
-                #self.browser.find_element_by_xpath('//span[contains(text(),"省公司优化派单")]').click()
-                #self.browser.find_element_by_xpath('/html/body/div[4]/div[1]/div[1]/ul/li[2]/span').click()
-                #dataTypeList[0].click
-                #优化分类共6种，取值0-5
-                #0-省公司自动触发 默认值 为空
-                #1-省公司优化派单
-                #2-地市自派-测试类
-                #3-地市自派-投诉类
-                #4-地市自派-干扰类
-                #5-地市自派-其他类
-                """
-                if(text_list[1]=="省公司自动触发"):
-                    dataTypeListLi[0].click()
-                """
-                #if(text_list[1]=="省公司优化派单"):
-                #dataTypeListLi[1].click()
-                
-                """
-                if(text_list[1]=="地市自派-测试类"):
-                    dataTypeListLi[2].click()
-                if(text_list[1]=="地市自派-投诉类"):
-                    dataTypeListLi[3].click()
-                if(text_list[1]=="地市自派-干扰类"):
-                    dataTypeListLi[4].click()
-                if(text_list[1]=="地市自派-其他类"):
-                    dataTypeListLi[5].click()
-                """ 
-            else:
-                self.browser.find_element_by_xpath('/html/body/div[4]/div[1]/div[1]/ul/li[1]/span').click()
+            
+            self.browser.find_element_by_xpath('//span[text()="省公司自动触发"]').click()
             time.sleep(2)
             #提交工单
-            self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[5]/button').click()
+            self.browser.find_element_by_xpath('//button[@class="el-button el-button--primary el-button--mini"]/span[contains(text(),"提交")]').click()
         except Exception as e:
             print("提交出错" +str(e))
-    """
-    处理转派
-    """
-    def trans(self,time_limit=''):
-        try:
-            #接单之前选项有{查看，任务处理}，派单前选项有{查看，删除，任务处理},派单后{1-查看，2-任务处理}
-            self.browser.find_element_by_xpath("/html/body/ul/div[2]/li/i").click()
-            time.sleep(5)
-            #获取工单详情上表头
 
-            tabList = self.browser.find_element_by_class_name('el-tabs__nav-scroll')
-            tabListDiv = tabList.find_elements_by_tag_name('div')
-            tabListDiv = tabListDiv[0].find_elements_by_tag_name('div')
-            tabListDiv[1].click()
-
-            time.sleep(1)
-            #设置工单处理时限，从文件里读取
-            input_limit = self.browser.find_element_by_id("form_component_resolved_duration")
-            input_limit.clear()
-            input_limit.send_keys(time_limit)
-            #转派
-            self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[6]/button[1]').click()
-        except:
-            print(str("转派出错"))
     """
     处理工单,que是个队列，在多线程的时候，如果给一个队列，会把处理好的工单号也保存到队列里，给其他线程
     直接从队列里读取工单号
@@ -132,7 +66,7 @@ class SendData(Base):
                 try:
                     now = datetime.now()
                     self.browser.execute_script("var setDate=document.getElementById(\"date_picker__task_previous\");setDate.removeAttribute('readonly');")
-                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[3]/div/div[1]/ul/div/div[2]/li/div/div[1]/input').send_keys("%d-%02d-%02d"%(now.year-1,now.month,1))
+                    self.browser.find_element_by_xpath('//input[@id="date_picker__task_previous"]').send_keys("%d-%02d-%02d"%(now.year-1,now.month,1))
                     #输入工单号
                     input_text = self.browser.find_element_by_id('public_inputCompinent__inputMainorderCode')
                 except:
@@ -155,36 +89,44 @@ class SendData(Base):
                 time.sleep(5)
                 #处理工单--选择工单处理菜单
                 self.browser.find_element_by_class_name("tableDropdown").click()
-                """
+                
                 time.sleep(3)
                 #接单之前选项有{查看，任务处理}，派单前选项有{1-查看，2-删除，3-任务处理},派单后{查看，任务处理}
-                menu = self.browser.find_elements_by_xpath('/html/body/ul/div/li')
-                if(menu.__len__()==3):
-                    #提交
-                    self.submit()
-                    time.sleep(5)
-                    #选择工单处理菜单
-                    self.browser.find_element_by_class_name("tableDropdown").click()
-                """
-                #选择工单处理菜单
-                #self.browser.find_element_by_class_name("tableDropdown").click()
-                #处理工单--转派
-                time.sleep(3)
-                self.trans(text_list[1])
+                #提交函数
+                self.submit()
+                time.sleep(5)
                 if(que != None):
                     que.put(text_list[0])
                 self.out_file.write(text_list[0]+'\n')
                 self.out_file.flush()
                 print("完成工单： "+text_list[0])
-            except:
-                print("处理工单出错,接着处理工单!")
+            except Exception as e:
+                print("处理工单出错,接着处理工单!"+str(e))
                 self.refresh()
         self.destroy()
 
 
+def send_stack(in_path="",out_path=""):
+    start = SendData(in_path=in_path,out_path=out_path)
+    start.run()
 
 
 
 if(__name__ == "__main__"):
+    """
     start = SendData()
     start.run()
+    """
+    data_path = './data/data.txt'
+    path_pre = data_path[0:-4]
+    thread_count = 4
+    data = DataFile(data_path,thread_count)
+    data.run()
+    for i in range(0,4):
+        send_thread = threading.Thread(target=send_stack,args=('./data/data'+str(i)+".txt","./data/Send_Thread"+str(i)+".txt"))
+        send_thread.setDaemon(True)
+        send_thread.start()
+        time.sleep(10)
+
+    while True:
+        pass

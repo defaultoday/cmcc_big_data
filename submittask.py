@@ -14,7 +14,7 @@ from datafile import DataFile
 
 class SubmitTask(Base):
     """
-    回工单类
+    质检类，需要上传质检附件之后再质检
     """
     def __init__(self,driver_path="./driver/chromedriver.exe",in_path="./data/data.txt",out_path="./data/submit_sucs.txt"):
         user_data = UserData()
@@ -22,6 +22,8 @@ class SubmitTask(Base):
         super().__init__(driver_path,in_path,out_path,username,password,need_upload=True)
 
     """
+
+    
     处理上传附件功能，file_path就附件的绝对路径
     """
     def upload(self, file_path):
@@ -82,7 +84,7 @@ class SubmitTask(Base):
                         continue
                     #接单之前选项有{1-查看，2-任务处理},这里选择 查看 就完成接单
                     time.sleep(1)
-                    self.browser.find_element_by_xpath("/html/body/ul/div[2]/li/i").click()
+                    self.browser.find_element_by_xpath('//*[@class="el-dropdown-menu__item" and text()="任务处理"]').click()
                     time.sleep(3)
                     tabList = self.browser.find_element_by_class_name('el-tabs__nav-scroll')
                     tabListDiv = tabList.find_elements_by_tag_name('div')
@@ -91,24 +93,24 @@ class SubmitTask(Base):
                     tabListDiv[2].click()
                     time.sleep(3)
                     #支路选择
-                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[3]/div[2]/div/div/form/div[1]/div/div/div[1]/input').click()
+                    self.browser.find_element_by_xpath('//input[@id="form_component_control_switch"]').click()
                     #选择质检
                     time.sleep(1)
-                    check_list = self.browser.find_elements_by_xpath('//span[text()="质检"]')
+                    check_list = self.browser.find_elements_by_xpath('//li[@class="el-select-dropdown__item"]//span[text()="质检"]')
                     check_list[0].click()
                     time.sleep(3)
                     #选择附件
                     #file_input = self.browser.find_element_by_xpath('//*[@id="online_task_upload_area"]/div[1]/input')
                     #file_input.send_keys('/home/long/Codes/cmcc_data/data/质检-附件.xlsx')
                     #self.browser.execute_script("var setDate=document.getElementById(\"formComponent_isEdit__select优化分类\");setDate.removeAttribute('readonly');")
-                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[7]/div[2]/div[1]/button').click()
+                    self.browser.find_element_by_xpath('//button[@class="el-button el-button--primary el-button--small"]/span[contains(text(),"地市处理附件上传")]').click()
                     time.sleep(5)
                     #上传文件
                     path = os.getcwd() + '\\data\\质检-附件.xlsx'
                     self.upload(path)
                     time.sleep(5)
                     #质检按钮
-                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[7]/button[2]/span').click()
+                    self.browser.find_element_by_xpath('//button[@class="el-button el-button--primary el-button--mini"]/span[contains(text(),"质检")]').click()
                     time.sleep(5)
                     print("处理完成："+text)
                     self.out_file.write(text+'\n')

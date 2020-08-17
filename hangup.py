@@ -68,7 +68,8 @@ class Hangup(Base):
                 time.sleep(5)
                 self.browser.find_element_by_id("task_management_mat").click()
                 time.sleep(5)
-                self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[2]/ul/div[3]/li/div/p').click()
+                #点击到驳回里
+                self.browser.find_element_by_xpath('//div[@class="navContent"]/p[text()="驳回"]').click()
                 time.sleep(5)
                 #判断是否是当前工单号的工单
                 check = self.browser.find_element_by_xpath('//*[@id="complex_table__task_out-table"]/div[3]/table/tbody/tr[1]/td[3]/div')
@@ -81,7 +82,7 @@ class Hangup(Base):
                         continue
                     #接单之前选项有{1-查看，2-任务处理},这里选择 查看 就完成接单
                     time.sleep(1)
-                    self.browser.find_element_by_xpath("/html/body/ul/div[2]/li/i").click()
+                    self.browser.find_element_by_xpath('//*[@class="el-dropdown-menu__item" and text()="任务处理"]').click()
                     time.sleep(3)
                     tabList = self.browser.find_element_by_class_name('el-tabs__nav-scroll')
                     tabListDiv = tabList.find_elements_by_tag_name('div')
@@ -90,7 +91,7 @@ class Hangup(Base):
                     tabListDiv[2].click()
                     time.sleep(3)
                     #支路选择--挂起
-                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[3]/div[2]/div/div/form/div[1]/div/div/div[1]/input').click()
+                    self.browser.find_element_by_xpath('//input[@id="form_component_control_switch"]').click()
                     #选择挂起
                     time.sleep(1)
                     check_list = self.browser.find_elements_by_xpath('//span[text()="挂起"]')
@@ -100,14 +101,14 @@ class Hangup(Base):
                     #file_input = self.browser.find_element_by_xpath('//*[@id="online_task_upload_area"]/div[1]/input')
                     #file_input.send_keys('/home/long/Codes/cmcc_data/data/质检-附件.xlsx')
                     #self.browser.execute_script("var setDate=document.getElementById(\"formComponent_isEdit__select优化分类\");setDate.removeAttribute('readonly');")
-                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[7]/div[2]/div[1]/button').click()
+                    self.browser.find_element_by_xpath('//button[@class="el-button el-button--primary el-button--small"]/span[contains(text(),"地市处理附件上传")]').click()
                     time.sleep(5)
                     #上传文件
                     path = os.getcwd() + '\\data\\挂起报告.docx'
                     self.upload(path)
                     time.sleep(3)
                     #挂起按钮
-                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[7]/button[1]/span').click()
+                    self.browser.find_element_by_xpath('//button[@class="el-button el-button--primary el-button--mini"]/span[contains(text(),"挂起")]').click()
                     time.sleep(3)
                     print("处理完成："+text)
                     self.out_file.write(text+'\n')

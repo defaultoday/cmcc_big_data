@@ -14,7 +14,7 @@ from datafile import DataFile
 
 class Hangupadopt(Base):
     """
-    挂起类，选择挂起，上传附件，点击挂起
+    挂起通过，工单号-〉任务处理-挂起通过
     """
     def __init__(self,driver_path="./driver/chromedriver.exe",in_path="./data/data.txt",out_path="./data/submit_sucs.txt"):
         user_data = UserData()
@@ -67,8 +67,6 @@ class Hangupadopt(Base):
                 time.sleep(5)
                 self.browser.find_element_by_id("task_management_mat").click()
                 time.sleep(5)
-                self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[1]/div/div[2]/ul/div[3]/li/div/p').click()
-                time.sleep(5)
                 #判断是否是当前工单号的工单
                 check = self.browser.find_element_by_xpath('//*[@id="complex_table__task_out-table"]/div[3]/table/tbody/tr[1]/td[3]/div')
                 if(check.text == text):
@@ -78,14 +76,14 @@ class Hangupadopt(Base):
                     except:
                         print('没有工单号：'+text)
                         continue
-                    #接单之前选项有{1-查看，2-任务处理},这里选择 查看 就完成接单
+                    #接单之前选项有{1-查看，2-任务处理},这里选择 任务处理
                     time.sleep(1)
-                    self.browser.find_element_by_xpath("/html/body/ul/div[2]/li/i").click()
+                    self.browser.find_element_by_xpath('//*[@class="el-dropdown-menu__item" and text()="任务处理"]').click()
                     time.sleep(5)
                     
                     #挂起通过
                     #self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[7]/button[1]/span').click()
-                    self.browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/div[1]/div[2]/div[8]/button[1]/span[contains(text(),"挂起通过")]').click()
+                    self.browser.find_element_by_xpath('//button[@class="el-button el-button--primary el-button--mini"]/span[contains(text(),"挂起通过")]').click()
                     time.sleep(3)
                     print("处理完成："+text)
                     self.out_file.write(text+'\n')

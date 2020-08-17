@@ -18,7 +18,7 @@ class ReceiveData(Base):
     接工单类,负责从send_sucs.txt文件里读取工单号，登录后查询到工单点击查看>关闭工单，循环下个工单号，
     如果有工单在查询中出错，将放弃该工单号，重启浏览器查询下一个工单号，接单成功的单号保存到receive_sucs.txt文件
     """
-    def __init__(self,driver_path="./driver/chromedriver.exe",in_path="./data/send_sucs.txt",out_path="./data/receive_sucs.txt"):
+    def __init__(self,driver_path="./driver/chromedriver.exe",in_path="./data/data.txt",out_path="./data/receive_sucs.txt"):
         user_data = UserData()
         username,password = user_data.get_user_data(0)
         super().__init__(driver_path,in_path,out_path,username,password,need_upload=False)
@@ -65,7 +65,7 @@ class ReceiveData(Base):
                     self.browser.find_element_by_class_name("tableDropdown").click()
                     #接单之前选项有{1-查看，2-任务处理},这里选择 查看 就完成接单
                     time.sleep(1)
-                    self.browser.find_element_by_xpath("/html/body/ul/div[1]/li/i").click()
+                    self.browser.find_element_by_xpath('//*[@class="el-dropdown-menu__item" and text()="查看"]').click()
                     time.sleep(10)
                     tabList = self.browser.find_element_by_class_name('el-tabs__nav-scroll')
                     tabListDiv = tabList.find_elements_by_tag_name('div')[1]
@@ -78,9 +78,9 @@ class ReceiveData(Base):
                         self.out_file.write(text+'\n')
                         self.out_file.flush()
                         time.sleep(3)
-            except:
+            except Exception as e:
+                print("处理工单出错,接着处理工单!" + str(e))
                 self.refresh()
-                print("处理工单出错,接着处理工单!")
 
 
 def recv_stack(in_path="",out_path=""):
@@ -88,6 +88,10 @@ def recv_stack(in_path="",out_path=""):
     start.run()
 
 if(__name__ == "__main__"):
+    """
+    start = ReceiveData()
+    start.run()
+    """
     data_path = './data/data.txt'
     path_pre = data_path[0:-4]
     thread_count = 4
@@ -98,7 +102,7 @@ if(__name__ == "__main__"):
         send_thread.setDaemon(True)
         send_thread.start()
         time.sleep(3)
-    #start = ReceiveData(in_path='./data/Send_Thread0.txt',out_path='./data/Recv_Thread0.txt')
-    #start.run()
+    
+
     while True:
         pass

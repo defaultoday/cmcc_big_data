@@ -38,7 +38,7 @@ class Base(ABC):
         if(self.in_path != ""): 
             if(self.in_file == None):
                 try:
-                    self.in_file = open(self.in_path)
+                    self.in_file = open(self.in_path,encoding='utf-8')
                 except Exception as e:
                     print("加载工单文件出错！"+str(e))
                     return False

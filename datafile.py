@@ -10,7 +10,7 @@ class DataFile:
 
     def run(self):
         try:
-            file = open(self.data_path)
+            file = open(self.data_path,encoding='utf-8')
             datas = file.readlines()
             file.close()
             file = None
@@ -29,8 +29,8 @@ class DataFile:
                 thread_file.close()
                 thread_file = None
             print('数据分割完成')
-        except:
-            print("处理文件出错")
+        except Exception as e:
+            print("处理文件出错:"+str(e))
 
 
 if __name__ == "__main__":
